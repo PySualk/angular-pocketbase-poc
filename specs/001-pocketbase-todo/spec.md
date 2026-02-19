@@ -34,7 +34,7 @@ A user can mark any todo as completed to track their progress. Completed todos a
 
 **Acceptance Scenarios**:
 
-1. **Given** an incomplete todo exists, **When** the user marks it as complete, **Then** it displays with a distinct completed style (e.g., strikethrough or muted appearance) and that state persists across page refreshes
+1. **Given** an incomplete todo exists, **When** the user marks it as complete, **Then** it displays with a strikethrough title and muted/grey text and that state persists across page refreshes
 2. **Given** a completed todo exists, **When** the user unchecks it, **Then** it returns to the incomplete appearance and that state persists across page refreshes
 
 ---
@@ -71,27 +71,27 @@ Changes made in one browser tab are automatically reflected in all other open in
 ### Edge Cases
 
 - What happens when the user submits a todo with only whitespace characters?
-- What happens when a todo title is extremely long (e.g., 500+ characters)?
-- How does the app behave when the backend data store is temporarily unavailable?
-- What happens if the user rapidly adds multiple todos in quick succession?
+- **Long title**: Todo titles are capped at 200 characters; titles exceeding this limit are rejected with a validation message.
+- **Backend unavailable**: If PocketBase cannot be reached on initial load, the app displays a full-page error screen replacing the todo list, informing the user the backend is unavailable.
+- **Rapid successive adds**: Accepted — each create call is independent. PocketBase handles concurrent writes; realtime SSE events ensure all clients reach eventual consistency. No client-side debouncing or locking is required.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST display all existing todo items when the page loads
+- **FR-001**: System MUST display all existing todo items when the page loads, ordered by creation time descending (newest first)
 - **FR-002**: System MUST allow users to create a new todo by providing a text title
-- **FR-003**: System MUST reject todo creation when the title is empty or consists only of whitespace, informing the user why
+- **FR-003**: System MUST reject todo creation when the title is empty, consists only of whitespace, or exceeds 200 characters, informing the user why
 - **FR-004**: System MUST allow users to toggle a todo's state between incomplete and complete
 - **FR-005**: System MUST allow users to permanently delete a todo item
 - **FR-006**: System MUST persist all todo operations (create, toggle, delete) to a backend data store
-- **FR-007**: System MUST visually distinguish completed todos from incomplete todos
+- **FR-007**: System MUST visually distinguish completed todos from incomplete todos using strikethrough title and muted/grey text
 - **FR-008**: System MUST display a meaningful empty state message when no todos exist
 - **FR-009**: System MUST reflect changes from other clients within 3 seconds without requiring a page refresh
 
 ### Key Entities
 
-- **Todo Item**: Represents a single task. Has a title (text), a completion status (boolean), and a creation timestamp. Supports create, read, toggle completion, and delete operations.
+- **Todo Item**: Represents a single task. Has a title (text, max 200 characters), a completion status (boolean), and a creation timestamp. Supports create, read, toggle completion, and delete operations.
 
 ## Success Criteria *(mandatory)*
 
@@ -109,3 +109,14 @@ Changes made in one browser tab are automatically reflected in all other open in
 - Todo items only need a title and completion status; no due dates, tags, priorities, or categories are in scope for this minimal version
 - The app targets modern browser environments; legacy browser support is out of scope
 - Scalability and production-level concerns (rate limiting, data isolation, access control) are out of scope for this showcase
+- PocketBase runs as a Docker Compose service alongside the Angular dev server; developers start the full stack with a single `docker compose up` command
+
+## Clarifications
+
+### Session 2026-02-19
+
+- Q: Where will PocketBase run for this showcase? → A: Docker Compose service started alongside the Angular dev server
+- Q: In what order should todos be listed? → A: Newest first (creation time descending)
+- Q: When PocketBase is unreachable, how should the app behave? → A: Show a full-page error screen replacing the todo list
+- Q: What is the maximum allowed length for a todo title? → A: 200 characters
+- Q: How should completed todos be visually styled? → A: Strikethrough title with muted/grey text
