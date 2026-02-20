@@ -29,3 +29,10 @@ This is an Angular 21 + PocketBase proof-of-concept application. PocketBase inte
 **TypeScript**: Strict mode is fully enabled including `strictTemplates`, `noImplicitOverride`, `noImplicitReturns`, and `noPropertyAccessFromIndexSignature`.
 
 **Prettier config** (in `package.json`): `printWidth: 100`, `singleQuote: true`, Angular parser for HTML files.
+
+## Active Technologies
+- TypeScript 5.9, Angular 21.1 + `pocketbase@^0.26.8`, Tailwind CSS v4 (001-pocketbase-todo)
+- PocketBase 0.36.4 (SQLite, managed by PocketBase, served via Docker Compose) (001-pocketbase-todo)
+
+## Recent Changes
+- 001-pocketbase-todo: Added TypeScript 5.9, Angular 21.1 + `pocketbase@^0.26.8`, Tailwind CSS v4
