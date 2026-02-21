@@ -11,7 +11,9 @@ ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/po
 RUN unzip /tmp/pb.zip -d /pb/
 
 COPY ./pb_migrations /pb/pb_migrations
+COPY ./entrypoint.sh /pb/entrypoint.sh
+RUN chmod +x /pb/entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080", "--origins=http://localhost:4200"]
+CMD ["/pb/entrypoint.sh"]

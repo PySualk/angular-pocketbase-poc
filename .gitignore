@@ -45,3 +45,6 @@ Thumbs.db
 
 # PocketBase data
 pocketbase/pb_data/
+
+# Local environment — never commit real credentials
+.env
