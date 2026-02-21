@@ -8,3 +8,11 @@ services:
       - "8080:8080"
     volumes:
       - ./pocketbase/pb_data:/pb/pb_data
+    depends_on:
+      - mailpit
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"

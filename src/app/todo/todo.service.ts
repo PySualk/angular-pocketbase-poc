@@ -47,7 +47,7 @@ export class TodoService implements OnDestroy {
     const trimmed = title.trim();
     if (!trimmed) throw new Error('Title is required');
     if (trimmed.length > 200) throw new Error('Title cannot exceed 200 characters');
-    await this.pb.collection('todos').create({ title: trimmed, completed: false });
+    await this.pb.collection('todos').create({ title: trimmed, completed: false, owner: this.pb.authStore.record!.id });
   }
 
   async toggleTodo(id: string, completed: boolean): Promise<void> {

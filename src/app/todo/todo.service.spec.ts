@@ -21,19 +21,28 @@ const makeCollectionApi = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+const makeAuthStore = (userId = 'user1') => ({
+  record: { id: userId },
+});
+
 describe('TodoService', () => {
   let service: TodoService;
   let collectionSpy: ReturnType<typeof vi.fn>;
   let collectionApi: ReturnType<typeof makeCollectionApi>;
+  let authStore: ReturnType<typeof makeAuthStore>;
 
   beforeEach(() => {
     collectionApi = makeCollectionApi();
     collectionSpy = vi.fn().mockReturnValue(collectionApi);
+    authStore = makeAuthStore();
 
     TestBed.configureTestingModule({
       providers: [
         TodoService,
-        { provide: PocketBaseService, useValue: { client: { collection: collectionSpy } } },
+        {
+          provide: PocketBaseService,
+          useValue: { client: { collection: collectionSpy, authStore } },
+        },
       ],
     });
     service = TestBed.inject(TodoService);
@@ -69,7 +78,7 @@ describe('TodoService', () => {
   });
 
   describe('create()', () => {
-    it('should call pb.collection("todos").create() with title and completed false', async () => {
+    it('should call pb.collection("todos").create() with title, completed false, and owner', async () => {
       const createFn = vi.fn().mockResolvedValue(makeTodo({ title: 'New todo' }));
       const api = makeCollectionApi({ create: createFn });
       collectionSpy.mockReturnValue(api);
@@ -77,7 +86,7 @@ describe('TodoService', () => {
       await service.create('New todo');
 
       expect(collectionSpy).toHaveBeenCalledWith('todos');
-      expect(createFn).toHaveBeenCalledWith({ title: 'New todo', completed: false });
+      expect(createFn).toHaveBeenCalledWith({ title: 'New todo', completed: false, owner: 'user1' });
     });
 
     it('should throw when title is empty', async () => {
@@ -99,7 +108,7 @@ describe('TodoService', () => {
 
       await service.create('  Buy milk  ');
 
-      expect(createFn).toHaveBeenCalledWith({ title: 'Buy milk', completed: false });
+      expect(createFn).toHaveBeenCalledWith({ title: 'Buy milk', completed: false, owner: 'user1' });
     });
   });
 

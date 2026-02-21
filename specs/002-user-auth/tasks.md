@@ -16,9 +16,9 @@
 
 **Purpose**: Docker and PocketBase foundation required before any Angular work.
 
-- [ ] T001 Add Mailpit service (`axllent/mailpit`, ports 1025 + 8025) to `docker-compose.yml`
-- [ ] T002 [P] Write migration `pocketbase/pb_migrations/2_add_user_auth_to_todos.js`: drop existing `todos` collection and recreate with `owner` relation field (→ `users`, required, maxSelect 1) + auth-scoped rules (`listRule/viewRule: owner = @request.auth.id`, `createRule: @request.auth.id != ""`, `updateRule/deleteRule: owner = @request.auth.id`)
-- [ ] T003 [P] Write migration `pocketbase/pb_migrations/3_configure_smtp.js`: configure PocketBase SMTP host → `mailpit`, port → `1025`, set app URL → `http://localhost:4200`, set `users` collection password-reset action URL → `{APP_URL}/auth/confirm-reset`
+- [X] T001 Add Mailpit service (`axllent/mailpit`, ports 1025 + 8025) to `docker-compose.yml`
+- [X] T002 [P] Write migration `pocketbase/pb_migrations/2_add_user_auth_to_todos.js`: drop existing `todos` collection and recreate with `owner` relation field (→ `users`, required, maxSelect 1) + auth-scoped rules (`listRule/viewRule: owner = @request.auth.id`, `createRule: @request.auth.id != ""`, `updateRule/deleteRule: owner = @request.auth.id`)
+- [X] T003 [P] Write migration `pocketbase/pb_migrations/3_configure_smtp.js`: configure PocketBase SMTP host → `mailpit`, port → `1025`, set app URL → `http://localhost:4200`, set `users` collection password-reset action URL → `{APP_URL}/auth/confirm-reset`
 
 **Checkpoint**: Run `docker compose down -v && docker compose up --build`. PocketBase starts, both migrations apply, Mailpit inbox accessible at `http://localhost:8025`. No manual admin steps needed.
 
@@ -30,13 +30,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [P] Write failing tests for `AuthService` (register, login, logout, requestPasswordReset, confirmPasswordReset, `currentUser` signal initialised from `authStore`, `isAuthenticated` computed, `onChange` cleanup on destroy) in `src/app/auth/auth.service.spec.ts`
-- [ ] T005 [P] Write failing tests for `authGuard` (redirects unauthenticated to `/auth/login`, allows authenticated) and `guestGuard` (redirects authenticated to `/`, allows unauthenticated) in `src/app/auth/auth.guard.spec.ts`
-- [ ] T006 Implement `AuthService`: `register(email, password, passwordConfirm)` → create + authWithPassword; `login(email, password)` → authWithPassword; `logout()` → authStore.clear(); `requestPasswordReset(email)`; `confirmPasswordReset(token, password, passwordConfirm)`; `currentUser = signal(pb.authStore.record)` initialised via `onChange(cb, true)`; `isAuthenticated = computed(() => currentUser() !== null)`; unsubscribe in `ngOnDestroy` in `src/app/auth/auth.service.ts` — depends on T004
-- [ ] T007 Implement `authGuard` and `guestGuard` as `CanActivateFn` functions using `inject(AuthService)` and `inject(Router)` in `src/app/auth/auth.guard.ts` — depends on T005 + T006
-- [ ] T008 Update `src/app/app.routes.ts`: define routes `''` → `TodoListComponent` + `authGuard`; `auth/login` → `LoginComponent` + `guestGuard`; `auth/register` → `RegisterComponent` + `guestGuard`; `auth/confirm-reset` → `ConfirmResetComponent`; `**` → redirectTo `''` — depends on T007
-- [ ] T009 [P] Update `src/app/app.config.ts`: add `withComponentInputBinding()` to `provideRouter(routes, withComponentInputBinding())` — depends on T008
-- [ ] T010 [P] Simplify `src/app/app.ts` to a `<router-outlet />` shell: remove `TodoService` injection, `ngOnInit`, error signal, and imports of `TodoListComponent`/`BackendErrorComponent`; add `RouterOutlet` to imports — depends on T008
+- [X] T004 [P] Write failing tests for `AuthService` (register, login, logout, requestPasswordReset, confirmPasswordReset, `currentUser` signal initialised from `authStore`, `isAuthenticated` computed, `onChange` cleanup on destroy) in `src/app/auth/auth.service.spec.ts`
+- [X] T005 [P] Write failing tests for `authGuard` (redirects unauthenticated to `/auth/login`, allows authenticated) and `guestGuard` (redirects authenticated to `/`, allows unauthenticated) in `src/app/auth/auth.guard.spec.ts`
+- [X] T006 Implement `AuthService`: `register(email, password, passwordConfirm)` → create + authWithPassword; `login(email, password)` → authWithPassword; `logout()` → authStore.clear(); `requestPasswordReset(email)`; `confirmPasswordReset(token, password, passwordConfirm)`; `currentUser = signal(pb.authStore.record)` initialised via `onChange(cb, true)`; `isAuthenticated = computed(() => currentUser() !== null)`; unsubscribe in `ngOnDestroy` in `src/app/auth/auth.service.ts` — depends on T004
+- [X] T007 Implement `authGuard` and `guestGuard` as `CanActivateFn` functions using `inject(AuthService)` and `inject(Router)` in `src/app/auth/auth.guard.ts` — depends on T005 + T006
+- [X] T008 Update `src/app/app.routes.ts`: define routes `''` → `TodoListComponent` + `authGuard`; `auth/login` → `LoginComponent` + `guestGuard`; `auth/register` → `RegisterComponent` + `guestGuard`; `auth/confirm-reset` → `ConfirmResetComponent`; `**` → redirectTo `''` — depends on T007
+- [X] T009 [P] Update `src/app/app.config.ts`: add `withComponentInputBinding()` to `provideRouter(routes, withComponentInputBinding())` — depends on T008
+- [X] T010 [P] Simplify `src/app/app.ts` to a `<router-outlet />` shell: remove `TodoService` injection, `ngOnInit`, error signal, and imports of `TodoListComponent`/`BackendErrorComponent`; add `RouterOutlet` to imports — depends on T008
 
 **Checkpoint**: Run `npm test`. All `auth.service.spec.ts` and `auth.guard.spec.ts` tests pass. App boots with routing. Unauthenticated visit to `http://localhost:4200` redirects to `/auth/login` (404 component renders since `LoginComponent` is not yet implemented — this is expected).
 
@@ -48,8 +48,8 @@
 
 **Independent Test**: Visit `/auth/register`, submit a valid email + matching passwords (≥8 chars), verify redirect to `/` and the todo list is shown.
 
-- [ ] T011 [US1] Write failing tests for `RegisterComponent`: valid submission calls `authService.register()` and navigates to `/`; mismatched passwords shows validation error before submit; short password shows validation error; duplicate email shows server error; form disabled during submission in `src/app/auth/register/register.spec.ts`
-- [ ] T012 [US1] Implement `RegisterComponent`: standalone component with email, password, passwordConfirm inputs; client-side validation (email format, min 8 chars, passwords match); calls `authService.register()`; on success navigates to `/`; displays server error on duplicate email; disables form during submission; link to `/auth/login` in `src/app/auth/register/register.ts`
+- [X] T011 [US1] Write failing tests for `RegisterComponent`: valid submission calls `authService.register()` and navigates to `/`; mismatched passwords shows validation error before submit; short password shows validation error; duplicate email shows server error; form disabled during submission in `src/app/auth/register/register.spec.ts`
+- [X] T012 [US1] Implement `RegisterComponent`: standalone component with email, password, passwordConfirm inputs; client-side validation (email format, min 8 chars, passwords match); calls `authService.register()`; on success navigates to `/`; displays server error on duplicate email; disables form during submission; link to `/auth/login` in `src/app/auth/register/register.ts`
 
 **Checkpoint**: Run `npm test`. All `register.spec.ts` tests pass. Manual test: visit `/auth/register`, create an account, verify auto-redirect to `/` (todo list — which shows backend error until Phase 5 wires `TodoListComponent`).
 
@@ -61,8 +61,8 @@
 
 **Independent Test**: With an existing account, visit `/auth/login`, submit credentials, verify redirect to `/`.
 
-- [ ] T013 [US2] Write failing tests for `LoginComponent`: valid credentials call `authService.login()` and navigate to `/`; invalid credentials show generic "Invalid email or password" error (no field disclosure); authenticated user visiting `/auth/login` redirects to `/` (guestGuard); form disabled during submission; "forgot password" section visible with email input that calls `authService.requestPasswordReset()` and shows success message in `src/app/auth/login/login.spec.ts`
-- [ ] T014 [US2] Implement `LoginComponent`: standalone component with email + password inputs; calls `authService.login()`; on success navigates to `/`; displays generic error on 400; disables form during submission; "Forgot password?" section with email input + submit that calls `authService.requestPasswordReset()` and shows "Check your email" confirmation; link to `/auth/register` in `src/app/auth/login/login.ts`
+- [X] T013 [US2] Write failing tests for `LoginComponent`: valid credentials call `authService.login()` and navigate to `/`; invalid credentials show generic "Invalid email or password" error (no field disclosure); authenticated user visiting `/auth/login` redirects to `/` (guestGuard); form disabled during submission; "forgot password" section visible with email input that calls `authService.requestPasswordReset()` and shows success message in `src/app/auth/login/login.spec.ts`
+- [X] T014 [US2] Implement `LoginComponent`: standalone component with email + password inputs; calls `authService.login()`; on success navigates to `/`; displays generic error on 400; disables form during submission; "Forgot password?" section with email input + submit that calls `authService.requestPasswordReset()` and shows "Check your email" confirmation; link to `/auth/register` in `src/app/auth/login/login.ts`
 
 **Checkpoint**: Run `npm test`. All `login.spec.ts` tests pass. Manual test: register an account, sign out (no button yet), sign back in via `/auth/login`, verify redirect to `/`.
 
@@ -76,10 +76,10 @@
 
 **Independent Test (US4)**: Create two accounts, add todos to each. Sign in as Account A and verify Account B's todos are not visible (and vice versa).
 
-- [ ] T015 [P] [US3] [US4] Write failing tests for updated `TodoService`: `create()` includes `owner` field from `pb.authStore.record.id`; `load()` returns only authenticated user's todos (server-side rule — test via mock) in `src/app/todo/todo.service.spec.ts`
-- [ ] T016 [P] [US3] [US4] Write failing tests for updated `TodoListComponent`: component calls `todoService.load()` in `ngOnInit`; displays `authService.currentUser()` email/name; "Sign out" button calls `authService.logout()` and navigates to `/auth/login`; shows `BackendErrorComponent` on load failure in `src/app/todo/todo-list.spec.ts`
-- [ ] T017 [US3] [US4] Update `TodoService.create()` to include `owner: this.pb.authStore.record!.id` in the request body in `src/app/todo/todo.service.ts` — depends on T015
-- [ ] T018 [US3] [US4] Update `TodoListComponent`: add `ngOnInit` that calls `todoService.load()` and sets error signal on failure; add `BackendErrorComponent` import; inject `AuthService`; display current user identity (email or name); add "Sign out" button that calls `authService.logout()` and navigates to `/auth/login` in `src/app/todo/todo-list.ts` — depends on T016 + T017
+- [X] T015 [P] [US3] [US4] Write failing tests for updated `TodoService`: `create()` includes `owner` field from `pb.authStore.record.id`; `load()` returns only authenticated user's todos (server-side rule — test via mock) in `src/app/todo/todo.service.spec.ts`
+- [X] T016 [P] [US3] [US4] Write failing tests for updated `TodoListComponent`: component calls `todoService.load()` in `ngOnInit`; displays `authService.currentUser()` email/name; "Sign out" button calls `authService.logout()` and navigates to `/auth/login`; shows `BackendErrorComponent` on load failure in `src/app/todo/todo-list.spec.ts`
+- [X] T017 [US3] [US4] Update `TodoService.create()` to include `owner: this.pb.authStore.record!.id` in the request body in `src/app/todo/todo.service.ts` — depends on T015
+- [X] T018 [US3] [US4] Update `TodoListComponent`: add `ngOnInit` that calls `todoService.load()` and sets error signal on failure; add `BackendErrorComponent` import; inject `AuthService`; display current user identity (email or name); add "Sign out" button that calls `authService.logout()` and navigates to `/auth/login` in `src/app/todo/todo-list.ts` — depends on T016 + T017
 
 **Checkpoint**: Run `npm test`. All `todo.service.spec.ts` and `todo-list.spec.ts` tests pass. Full flow working: register → see empty todo list → add todos → sign out → redirected to login → sign back in → see only own todos.
 
@@ -91,8 +91,8 @@
 
 **Independent Test**: Request reset via the "Forgot password?" form on `/auth/login`, open Mailpit at `http://localhost:8025`, follow the reset link, set a new password, sign in with the new password successfully.
 
-- [ ] T019 [US5] Write failing tests for `ConfirmResetComponent`: reads `token` from `@Input()`; valid submission calls `authService.confirmPasswordReset(token, password, passwordConfirm)` and navigates to `/auth/login`; mismatched passwords show validation error; expired/invalid token shows error with link back to `/auth/login`; form disabled during submission in `src/app/auth/confirm-reset/confirm-reset.spec.ts`
-- [ ] T020 [US5] Implement `ConfirmResetComponent`: `@Input() token = ''`; new-password + confirm inputs with validation (min 8 chars, match); calls `authService.confirmPasswordReset(token, password, passwordConfirm)`; on success navigates to `/auth/login`; on 400 (expired/used token) displays error message with "Request a new link" navigation to `/auth/login`; form disabled during submission in `src/app/auth/confirm-reset/confirm-reset.ts`
+- [X] T019 [US5] Write failing tests for `ConfirmResetComponent`: reads `token` from `@Input()`; valid submission calls `authService.confirmPasswordReset(token, password, passwordConfirm)` and navigates to `/auth/login`; mismatched passwords show validation error; expired/invalid token shows error with link back to `/auth/login`; form disabled during submission in `src/app/auth/confirm-reset/confirm-reset.spec.ts`
+- [X] T020 [US5] Implement `ConfirmResetComponent`: `@Input() token = ''`; new-password + confirm inputs with validation (min 8 chars, match); calls `authService.confirmPasswordReset(token, password, passwordConfirm)`; on success navigates to `/auth/login`; on 400 (expired/used token) displays error message with "Request a new link" navigation to `/auth/login`; form disabled during submission in `src/app/auth/confirm-reset/confirm-reset.ts`
 
 **Checkpoint**: Run `npm test`. All `confirm-reset.spec.ts` tests pass. End-to-end test: request reset from `/auth/login`, check Mailpit inbox (`http://localhost:8025`), follow link to `/auth/confirm-reset?token=...`, set new password, sign in.
 
@@ -100,7 +100,7 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T021 [P] Run `npm test` — confirm all 0 failing tests across the full test suite
+- [X] T021 [P] Run `npm test` — confirm all 0 failing tests across the full test suite
 - [ ] T022 [P] Verify all spec.md acceptance scenarios manually against running app using `quickstart.md` as guide (all P1 user stories + password reset end-to-end via Mailpit)
 
 ---

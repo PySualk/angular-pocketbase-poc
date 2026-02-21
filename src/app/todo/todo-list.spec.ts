@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
 import { TodoListComponent } from './todo-list';
 import { TodoService } from './todo.service';
+import { AuthService } from '../auth/auth.service';
 import { Todo } from './todo';
 
 const makeTodo = (overrides: Partial<Todo> = {}): Todo => ({
@@ -18,30 +20,57 @@ describe('TodoListComponent', () => {
   let todosSignal: ReturnType<typeof signal<Todo[]>>;
   let loadingSignal: ReturnType<typeof signal<boolean>>;
   let createFn: ReturnType<typeof vi.fn>;
+  let loadFn: ReturnType<typeof vi.fn>;
+  let logoutFn: ReturnType<typeof vi.fn>;
+  let router: Router;
 
   beforeEach(async () => {
     todosSignal = signal<Todo[]>([]);
     loadingSignal = signal<boolean>(false);
     createFn = vi.fn().mockResolvedValue(undefined);
+    loadFn = vi.fn().mockResolvedValue(undefined);
+    logoutFn = vi.fn();
 
     await TestBed.configureTestingModule({
       imports: [TodoListComponent],
       providers: [
+        provideRouter([]),
         {
           provide: TodoService,
           useValue: {
             todos: todosSignal,
             loading: loadingSignal,
             create: createFn,
+            load: loadFn,
             toggleTodo: vi.fn().mockResolvedValue(undefined),
             deleteTodo: vi.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: signal({ id: 'u1', email: 'test@example.com' }),
+            isAuthenticated: signal(true),
+            logout: logoutFn,
           },
         },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TodoListComponent);
+    router = TestBed.inject(Router);
     fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  });
+
+  it('should call todoService.load() on init', () => {
+    expect(loadFn).toHaveBeenCalled();
+  });
+
+  it('should display the current user email', () => {
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('test@example.com');
   });
 
   it('should show empty state message when todos is empty', () => {
@@ -99,9 +128,53 @@ describe('TodoListComponent', () => {
     expect(el.textContent).toMatch(/200|too long|max/i);
   });
 
-  it('should show create form with accessible label', () => {
-    const el = fixture.nativeElement as HTMLElement;
-    const label = el.querySelector('label[for]');
-    expect(label).toBeTruthy();
+  it('should call authService.logout() and navigate to /auth/login when sign out is clicked', async () => {
+    const navSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const signOutBtn = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('[data-testid="sign-out"]');
+    expect(signOutBtn).toBeTruthy();
+    signOutBtn!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(logoutFn).toHaveBeenCalled();
+    expect(navSpy).toHaveBeenCalledWith(['/auth/login']);
+  });
+
+  it('should show BackendErrorComponent on load failure', async () => {
+    loadFn = vi.fn().mockRejectedValue(new Error('network error'));
+
+    await TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [TodoListComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: TodoService,
+          useValue: {
+            todos: todosSignal,
+            loading: loadingSignal,
+            create: createFn,
+            load: loadFn,
+            toggleTodo: vi.fn(),
+            deleteTodo: vi.fn(),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            currentUser: signal({ id: 'u1', email: 'test@example.com' }),
+            isAuthenticated: signal(true),
+            logout: logoutFn,
+          },
+        },
+      ],
+    }).compileComponents();
+
+    const f = TestBed.createComponent(TodoListComponent);
+    f.detectChanges();
+    await f.whenStable();
+    f.detectChanges();
+
+    const el = f.nativeElement as HTMLElement;
+    expect(el.querySelector('app-backend-error')).toBeTruthy();
   });
 });
