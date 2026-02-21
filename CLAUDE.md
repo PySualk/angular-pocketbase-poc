@@ -209,6 +209,8 @@ Feature specs live in `specs/<feature-id>/`. The `.claude/commands/` directory c
 Database schema changes belong in `pocketbase/pb_migrations/`. Migrations are JS files using PocketBase's migration API and run automatically when the container starts. Always provide a down function (rollback) alongside the up function.
 
 ## Active Technologies
+- TypeScript 5.9 (strict mode) + Angular 21.1, PocketBase JS SDK ^0.26.8, Tailwind CSS v4, Vitest ^4.0.8 (002-user-auth)
+- PocketBase SQLite (via Docker); `localStorage` for JWT session persistence (SDK default) (002-user-auth)
 
 | Technology | Version | Role |
 |---|---|---|
